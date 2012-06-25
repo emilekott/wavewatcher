@@ -1,0 +1,71 @@
+<?php
+
+function weatherupdater_schema() {
+    $schema['weather'] = array(
+        'description' => 'Weather data table',
+        'fields' => array(
+            'id' => array(
+                'description' => 'The primary identifier for a weather reading',
+                'type' => 'serial',
+                'unsigned' => TRUE,
+                'not null' => TRUE),
+            'created' => array(
+                'description' => 'The Unix timestamp of the reading.',
+                'type' => 'int',
+                'not null' => TRUE,
+                'default' => 0),
+            'direction' => array(
+                'description' => 'The Wind Direction.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'windMean' => array(
+                'description' => 'The Mean Wind Strength.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'windMax' => array(
+                'description' => 'The Max Wind Strength.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'tide' => array(
+                'description' => 'The Tide Height.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'waveMean' => array(
+                'description' => 'The Mean Wave Height.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'waveMax' => array(
+                'description' => 'The Max Wave Height.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'waveperiod' => array(
+                'description' => 'The Wave period.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'tempAir' => array(
+                'description' => 'The Air Temperature.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'tempSea' => array(
+                'description' => 'The Sea Temperature.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+            'airPressure' => array(
+                'description' => 'The Air Pressure.',
+                'type' => 'float',
+                'not null' => TRUE,
+                'default' => 0),
+        ),
+        'primary key' => array('id'));
+
+    return $schema;
+}

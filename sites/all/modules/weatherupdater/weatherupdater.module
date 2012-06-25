@@ -1,6 +1,138 @@
 <?php
-function weatherupdater_form_alter(&$form, &$form_state, $form_id) {
-   if ($form_id == 'user_profile_form'){
-       //print_r($form);
-   }
+
+function weatherupdater_cronapi($op, $job = NULL) {
+
+    $items['weatherupdater_cron'] = array(
+        'description' => 'Update weather stats and email users',
+        'rule' => '*/5 * * * *',
+        'callback' => 'update_weather',
+    );
+    return $items;
 }
+
+function update_weather() {
+
+    /*
+     * Scrape chimet weather data
+     * 
+     */
+    $content = file_get_contents("http://www.chimet.co.uk");
+
+    $dom = new DOMDocument;
+    $file = @$dom->loadHTML($content);
+    $rows = array();
+    foreach ($dom->getElementsByTagName('tr') as $tr) {
+        $cells = array();
+        foreach ($tr->getElementsByTagName('td') as $td) {
+            $cells[] = $td->nodeValue;
+        }
+        $rows[] = $cells;
+    }
+
+    $wind_direction = $rows[2][1];
+    $direction = _convert_direction($wind_direction);
+    $windMean = floatval($rows[0][1]);
+    $windMax = floatval($rows[1][1]);
+    $tide = floatval($rows[3][1]);
+    $waveMean = floatval($rows[4][1]);
+    $waveMax = floatval($rows[5][1]);
+    $waveperiod = floatval($rows[6][1]);
+    $tempAir = floatval($rows[7][1]);
+    $tempSea = floatval($rows[8][1]);
+    $airPressure = floatval($rows[9][1]);
+
+    drupal_set_message("Wind Mean is $windMean");
+
+    /*
+     * 
+     * Insert data into weather table
+     * 
+     */
+
+    $weather_id = db_insert('weather')
+            ->fields(array(
+                'created' => REQUEST_TIME,
+                'direction' => $direction,
+                'windMean' => $windMean,
+                'windMax' => $windMax,
+                'tide' => $tide,
+                'waveMean' => $waveMean,
+                'waveMax' => $waveMax,
+                'waveperiod' => $waveperiod,
+                'tempAir' => $tempAir,
+                'tempSea' => $tempSea,
+                'airPressure' => $airPressure,
+              
+            ))
+            ->execute();
+
+    drupal_set_message("ID is $weather_id");
+
+
+    /*
+     * Email wind and wave users
+     */
+    
+    $wind_users = _get_users($windMean, NULL);
+    $wave_users = _get_users(NULL, $waveMean);
+    
+    foreach ($wind_users As $wind_user){
+        $user = user_load($wind_user->uid);
+        
+        //email user or add to list??
+        
+    }
+}
+
+function _convert_direction($wind_direction_text) {
+    switch ($wind_direction_text) {
+        case "N":
+            return 0;
+            break;
+        case "NNE":
+            return 22.5;
+            break;
+        case "NE":
+            return 45;
+            break;
+        case "ENE":
+            return 67.5;
+            break;
+        case "E":
+            return 90;
+            break;
+        case "ESE":
+            return 112.5;
+            break;
+        case "SE":
+            return 135;
+            break;
+        case "SSE":
+            return 157.5;
+            break;
+        case "S":
+            return 180;
+            break;
+        case "SSW":
+            return 202.5;
+            break;
+        case "SW":
+            return 225;
+            break;
+        case "WSW":
+            return 247.5;
+        case "W":
+            return 270;
+            break;
+        case "WNW":
+            return 292.5;
+            break;
+        case "NW":
+            return 315;
+            break;
+        case "NNW":
+            return 337.5;
+            break;
+    }
+}
+
