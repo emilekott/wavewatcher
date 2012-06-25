@@ -1,5 +1,37 @@
 <?php
 
+function weatherupdater_form_alter(&$form, &$form_state, $form_id) {
+    //print_r($form_id);
+
+    /* purely for testing
+     * 
+     * 
+     * 
+     */
+    $windMean = 20; //test value
+    
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'user')
+            ->entityCondition('bundle', 'user')
+            ->propertyCondition('status', 1)
+            ->fieldCondition('field_wind_alert', 'value', 1, '=')
+            ->fieldCondition('field_wind_alert_level', 'value', $windMean, '<='); //20 needs to be changed for var
+    $result = $query->execute();
+    $users = $result['user'];
+    
+    //this gets list of users but still need to check last alert details
+    foreach ($users as $user){
+        //print_r($user->uid);
+        $details = user_load($user->uid);
+        $last_wind_alert = $details->field_last_wind_alert['und'][0]['value'];
+        $last_wind_strength = $details->field_last_alert_strength['und'][0]['value'];
+        if ($windMean > $last_wind_strenth + 5 )||{
+            
+        }
+    }
+   // print_r($result);
+}
+
 function weatherupdater_cronapi($op, $job = NULL) {
 
     $items['weatherupdater_cron'] = array(
@@ -41,7 +73,7 @@ function update_weather() {
     $tempSea = floatval($rows[8][1]);
     $airPressure = floatval($rows[9][1]);
 
-    drupal_set_message("Wind Mean is $windMean");
+    //drupal_set_message("Wind Mean is $windMean");
 
     /*
      * 
@@ -62,26 +94,39 @@ function update_weather() {
                 'tempAir' => $tempAir,
                 'tempSea' => $tempSea,
                 'airPressure' => $airPressure,
-              
             ))
             ->execute();
 
-    drupal_set_message("ID is $weather_id");
+    //drupal_set_message("ID is $weather_id");
 
 
     /*
      * Email wind and wave users
      */
-    
+
     $wind_users = _get_users($windMean, NULL);
     $wave_users = _get_users(NULL, $waveMean);
-    
-    foreach ($wind_users As $wind_user){
+
+    foreach ($wind_users As $wind_user) {
         $user = user_load($wind_user->uid);
-        
+
         //email user or add to list??
-        
+        //update last mailed fields for user...
     }
+}
+
+function _get_wind_users($windMean) {
+    /*
+      $query = new EntityFieldQuery();
+      $query->entityCondition('entity_type', 'user')
+      ->fieldCondition('field_wave_alert_level', 'value', $windMean, '<=')
+      ->fieldCondition('field_wave_alert', 'value', 1, '=');
+      $result = $query->execute();
+      print_r($result);
+      return $result;
+     * 
+     * 
+     */
 }
 
 function _convert_direction($wind_direction_text) {
