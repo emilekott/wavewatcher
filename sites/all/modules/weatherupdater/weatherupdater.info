@@ -1,0 +1,8 @@
+;$Id$
+name = Weather Updater
+description = Updates weather data via chimet and emails users depending on alert prefs
+core = 7.x
+dependencies[] = field
+dependencies[] = date
+
+files[] = weatherupdater.module
